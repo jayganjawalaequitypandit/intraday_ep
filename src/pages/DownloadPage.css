@@ -1,0 +1,46 @@
+.download-hero {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(254, 121, 2, .12), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #fffaf3 100%);
+}
+
+.download-phone-panel {
+  min-height: 520px;
+}
+
+.download-phone-image {
+  width: min(100%, 390px);
+  max-height: 500px;
+  object-position: center bottom;
+  filter: drop-shadow(0 14px 22px rgba(15, 23, 42, .18));
+}
+
+@media (max-width: 991.98px) {
+  .download-phone-panel {
+    min-height: 380px;
+  }
+
+  .download-phone-image {
+    max-height: 360px;
+  }
+}
+
+.download-store-badge {
+  display: block;
+  width: 156px;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transition: transform .15s ease;
+}
+
+.download-store-badge:hover {
+  transform: translateY(-2px);
+}
+
+.download-store-badge img {
+  display: block;
+  width: 100%;
+  height: auto;
+}

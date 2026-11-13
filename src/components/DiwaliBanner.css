@@ -1,0 +1,351 @@
+.diwali-banner {
+    /* --diwali-banner-text: #8f1725;
+    --diwali-banner-background: #fff4d6;
+    --diwali-banner-border: #f4c55a; */
+    --diwali-banner-text: #ffffff;
+    --diwali-banner-background: #211638;
+    --diwali-banner-border: #49376c;
+    position: fixed;
+    left: clamp(12px, 3vw, 32px);
+    right: clamp(12px, 3vw, 32px);
+    bottom: 0;
+    z-index: 1050;
+    max-width: 720px;
+    margin: 0 auto;
+    border: 1px solid var(--diwali-banner-border);
+    border-radius: 22px 22px 0 0;
+    background: var(--diwali-banner-background);
+    box-shadow: 0 12px 36px rgba(19, 12, 53, .2)
+}
+
+.diwali-banner--inline {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0 0 .25rem;
+    border: 1px solid var(--diwali-banner-border);
+    border-radius: 0;
+    background-color: #211638;
+    color: var(--diwali-banner-text);
+    box-shadow: 0 1px 3px rgba(19, 12, 53, .06)
+}
+
+.diwali-banner-content--inline {
+    display: grid !important;
+    grid-template-columns: 28px max-content 12px minmax(0, 1fr) 30px auto auto;
+    grid-template-areas: "diya greeting divider tagline fireworks cta close";
+    gap: 5px !important;
+    min-height: 0;
+    padding: 1px 8px !important;
+    background-color: #211638;
+    color: var(--diwali-banner-text)
+}
+
+.diwali-banner--inline .diwali-banner-content {
+    min-height: 0;
+    background-color: #211638
+}
+
+.diwali-banner-diya--inline {
+    grid-area: diya;
+    width: 18px;
+    height: 20px;
+    margin-inline-end: 6px
+}
+
+.diwali-banner-title--inline {
+    grid-area: greeting;
+    min-width: 0;
+    margin-inline: 4px;
+    font-size: clamp(12px, 2vw, 16px);
+    line-height: 1.2
+}
+
+.diwali-banner-divider--inline {
+    display: block;
+    grid-area: divider;
+    margin-inline-start: 4px;
+    margin-inline-end: 4px;
+    height: 16px
+}
+
+.diwali-banner-fireworks--inline {
+    position: static;
+    display: block;
+    grid-area: fireworks;
+    width: 24px;
+    height: 20px;
+    object-fit: contain;
+    transform: none;
+    opacity: .7
+}
+
+.diwali-banner-tagline--inline {
+    grid-area: tagline;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(10px, 1.6vw, 13px)
+}
+
+.diwali-banner-tagline {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.diwali-banner-tagline-text::after {
+    display: inline-block;
+    height: .9em;
+    margin-left: 2px;
+    border-right: 1px solid currentColor;
+    content: "";
+    vertical-align: -.08em;
+    animation: diwali-banner-cursor-blink 800ms steps(2, start) infinite
+}
+
+@keyframes diwali-banner-cursor-blink {
+    to {
+        visibility: hidden
+    }
+}
+
+.diwali-banner-cta--inline {
+    grid-area: cta;
+    margin-inline-start: 0 !important;
+    padding: 1px 8px;
+    font-size: 12px;
+    line-height: 1
+}
+
+.diwali-banner-close--inline {
+    grid-area: close;
+    width: 20px;
+    height: 20px;
+    font-size: 16px
+}
+
+.diwali-banner-content {
+    position: relative;
+    min-height: 64px;
+    overflow: hidden;
+    border-radius: inherit;
+    background: var(--diwali-banner-background);
+    color: var(--diwali-banner-text)
+}
+
+.diwali-banner-diya {
+    width: 24px;
+    height: 36px;
+    flex: none;
+    object-fit: contain
+}
+
+.diwali-banner-title {
+    position: relative;
+    z-index: 1;
+    font-size: clamp(11px, 2vw, 18px)
+}
+
+.diwali-banner-trading {
+    display: inline
+}
+
+.diwali-banner-cta-compact {
+    display: none
+}
+
+.diwali-banner-cta {
+    flex: none;
+    padding: 8px 22px;
+    border: 1px solid var(--diwali-banner-border);
+    /* background: var(--diwali-banner-background); */
+    background:linear-gradient(180deg, #FE7902 0%, #F6530B 100%);
+    color: var(--diwali-banner-text)
+}
+
+.diwali-banner-cta:hover {
+    border-color: var(--diwali-banner-border);
+    background: var(--diwali-banner-border);
+    color: var(--diwali-banner-text)
+}
+
+.diwali-banner-divider {
+    position: relative;
+    z-index: 1;
+    width: 1px;
+    height: 38px;
+    flex: none;
+    background: var(--diwali-banner-border)
+}
+
+.diwali-banner-tagline {
+    position: relative;
+    z-index: 1;
+    color: var(--diwali-banner-text);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 15px;
+    font-style: italic;
+    white-space: nowrap
+}
+
+.diwali-banner-tagline em {
+    color: var(--diwali-banner-text);
+    font-weight: 700
+}
+
+.diwali-banner-fireworks {
+    position: absolute;
+    right: 190px;
+    top: 50%;
+    width: 62px;
+    height: 54px;
+    object-fit: contain;
+    opacity: .62;
+    transform: translateY(-50%);
+    pointer-events: none
+}
+
+.diwali-banner-close {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--diwali-banner-border);
+    font-size: 21px;
+    line-height: 1;
+    color: var(--diwali-banner-text)
+}
+
+.diwali-banner-close:hover {
+    border-color: var(--diwali-banner-border);
+    background: var(--diwali-banner-border);
+    color: var(--diwali-banner-text) !important
+}
+
+@media(max-width:640px) {
+    .diwali-banner {
+        left: 8px;
+        right: 8px;
+        max-width: none;
+        border-radius: 18px 18px 0 0
+    }
+
+    .diwali-banner-content {
+        min-height: 56px;
+        gap: 4px !important;
+        padding-right: 8px !important;
+        padding-left: 8px !important
+    }
+
+    .diwali-banner-trading,
+    .diwali-banner-divider {
+        display: none
+    }
+
+    .diwali-banner-content,
+    .diwali-banner-content--inline {
+        display: grid !important;
+        grid-template-columns: 24px minmax(0, 1fr) auto 24px;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+            "diya greeting cta close"
+            "diya tagline cta close";
+        column-gap: 6px !important;
+        row-gap: 1px;
+        min-height: 0;
+        padding: 6px 8px !important
+    }
+
+    .diwali-banner-diya {
+        grid-area: diya;
+        width: 18px;
+        height: 28px;
+        margin: 0
+    }
+
+    .diwali-banner-title,
+    .diwali-banner-title--inline {
+        grid-area: greeting;
+        min-width: 0;
+        font-size: clamp(10px, 3.8vw, 14px);
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+    .diwali-banner-tagline,
+    .diwali-banner-tagline--inline {
+        display: block;
+        grid-area: tagline;
+        min-width: 0;
+        overflow: hidden;
+        font-size: clamp(9px, 3vw, 11px);
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: normal
+    }
+
+    .diwali-banner-cta,
+    .diwali-banner-cta--inline {
+        grid-area: cta;
+        align-self: center;
+        margin: 0 !important;
+        padding: 6px 7px;
+        font-size: clamp(9px, 3.2vw, 12px)
+    }
+
+    .diwali-banner-cta-full {
+        display: none
+    }
+
+    .diwali-banner-cta-compact {
+        display: inline
+    }
+
+    .diwali-banner-close,
+    .diwali-banner-close--inline {
+        grid-area: close;
+        align-self: center;
+        width: 24px;
+        height: 24px;
+        font-size: 18px
+    }
+
+    .diwali-banner-fireworks {
+        display: none
+    }
+
+    .diwali-banner--inline {
+        left: auto;
+        right: auto;
+        width: 100%;
+        border-radius: 0
+    }
+
+    .diwali-banner-content--inline {
+        padding: 6px 5px !important
+    }
+
+    .diwali-banner-diya--inline {
+        width: 18px;
+        height: 24px;
+        margin: 0
+    }
+
+    .diwali-banner-divider--inline {
+        display: none
+    }
+
+    .diwali-banner-fireworks--inline {
+        display: none
+    }
+}

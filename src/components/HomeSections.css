@@ -1,0 +1,26 @@
+.hero-phone-preview {
+  width: min(100%, 390px);
+  max-height: 520px;
+}
+
+.closing-banner {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  background: linear-gradient(115deg, #fffdf8 35%, #fff5e3 100%);
+}
+.closing-banner-art {
+  align-self: end;
+  margin: 0 -24px -48px 0;
+  min-width: 0;
+  pointer-events: none;
+}
+.closing-banner-art img {
+  mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
+}
+@media (max-width: 991.98px) {
+  .closing-banner { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .closing-banner-art { margin: 0 -24px -48px 0; }
+}
+@media (max-width: 767.98px) {
+  .closing-banner { grid-template-columns: 1fr; }
+  .closing-banner-art { width: min(100%, 440px); margin: 0; justify-self: center; }
+}
