@@ -71,7 +71,7 @@ const planBenefits = [
 
 function PlanBenefits() {
   return (
-    <section className="p-4 h-100 d-none d-md-block" aria-labelledby="plan-benefits-title">
+    <section className="p-4 h-100" aria-labelledby="plan-benefits-title">
       <span
         className="d-inline-flex align-items-center justify-content-center rounded-circle"
         style={{
@@ -114,7 +114,7 @@ function PlanBenefits() {
             </div>
           </div>
         ))}
-      </div>      
+      </div>
       <p className="text-secondary mt-4 small">
         For any grievances/support, contact our support team at{" "}
         <a
@@ -331,7 +331,32 @@ function normalizePlan(plan, index) {
   };
 }
 
-function ServiceListPage({ onContinue, onStatusChange, notify }) {
+const PENDING_PLAN_KEY = "idt:pendingPaymentPlanId";
+
+function readPendingPlanId() {
+  try {
+    return sessionStorage.getItem(PENDING_PLAN_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writePendingPlanId(planId) {
+  try {
+    if (planId) sessionStorage.setItem(PENDING_PLAN_KEY, planId);
+    else sessionStorage.removeItem(PENDING_PLAN_KEY);
+  } catch {
+    // Storage unavailable (private mode etc.) — plan simply won't be preselected.
+  }
+}
+
+function ServiceListPage({
+  onContinue,
+  onStatusChange,
+  onCheckCompliance,
+  onComplianceRequired,
+  notify,
+}) {
   const eapiAuth = useSelector(selectEapiAuth);
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState("");
@@ -393,10 +418,13 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
         .filter((plan) => plan.isShow === true)
         .map(normalizePlan);
       setPlans(nextPlans);
+      const pendingPlanId = readPendingPlanId();
       setSelectedPlanId((currentId) =>
         nextPlans.some((plan) => plan.id === currentId)
           ? currentId
-          : nextPlans[0]?.id || "",
+          : nextPlans.some((plan) => plan.id === pendingPlanId)
+            ? pendingPlanId
+            : nextPlans[0]?.id || "",
       );
 
       const statusResponse =
@@ -484,6 +512,34 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
       notify("error", "Please accept the MITC and Privacy Policy to subscribe");
       return;
     }
+
+    // KYC and agreement must be complete before Cashfree opens.
+    setPaymentLoading(true);
+    let latestStatuses = statuses;
+    try {
+      latestStatuses = (await onCheckCompliance?.()) || statuses;
+    } finally {
+      setPaymentLoading(false);
+    }
+
+    if (latestStatuses.paymentComplete) {
+      writePendingPlanId("");
+      onContinue({ plan: selectedPlan, statuses: latestStatuses });
+      return;
+    }
+
+    if (!latestStatuses.kycComplete || !latestStatuses.agreementComplete) {
+      writePendingPlanId(selectedPlan.id);
+      notify(
+        "error",
+        !latestStatuses.kycComplete
+          ? "Please complete your KYC before making the payment"
+          : "Please sign the agreement before making the payment",
+      );
+      onComplianceRequired?.(latestStatuses);
+      return;
+    }
+    writePendingPlanId("");
 
     const recurringPayment = Boolean(selectedPlan.cfPlanId);
     const checkoutAvailable = recurringPayment
@@ -597,126 +653,133 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
   ];
 
   return (
-    <main className="container flex-grow-1 py-3" id="main-content">
-      <div className="row justify-content-between align-items-stretch g-4">
-        <div className="col-12 col-lg-7 order-2 order-lg-1">
-          <PlanBenefits />
-        </div>
-        <div className="col-12 col-lg-5 order-1 order-lg-2">
-          <div
-            className="card border rounded-3 shadow-sm overflow-hidden"
-            aria-labelledby="services-title"
-          >
-            <div className="px-md-4 px-3 py-3">
-              <div className="d-md-none d-block p-3 rounded-3 shadow-md bg-warning bg-opacity-10">
-                <div className="col-12 text-center ">
-                  <h4 className="h4 fw-semibold">
-                    Intraday Trader <span className="fw-bold" style={{ color: "#FA5B05" }}> PRO </span>
-                  </h4>
-                  <ul className="list-unstyled mb-0">
-                    {segments.map((segment) => (
-                      <li
-                        className="small d-flex align-items-center "
-                        key={segment}
-                      >
-                        <i
-                          className={`bi bi-check-circle-fill fs-6 me-2 mt-1`}
-                          style={{ color: "#FA5B05" }}
-                        />
-                        {segment}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <header className="mb-2">
-                <h5
-                  className="mb-3 fw-semibold d-block text-center "
-                  id="services-title"
-                >
-                  Choose a plan
-                </h5>
-              <OfferCountdown flush label="This Offer Ends In" />
-
-                <p className="text-secondary mb-0 small">
-                  {/* <span
-                    className="d-md-block text-nowrap mt-1"
-                    style={{ color: "#FA5B05", fontSize: "clamp(.75rem, 3.4vw, .875rem)" }}
-                  >
-                     SEBI Registered Research Analyst.
-                  </span> */}
-                </p>
-              </header>
-
-              {loading && (
-                <div className="text-center py-5">
-                  <div className="spinner-border text-warning" role="status">
-                    <span className="visually-hidden">Loading plans</span>
+    <div className="bg-body-tertiary flex-grow-1">
+      <main className="container py-3" id="main-content">
+        <div className="row justify-content-between align-items-center g-4">
+          <div className="col-12 col-lg-7 order-2 order-lg-1">
+            <PlanBenefits />
+          </div>
+          <div className="col-12 col-lg-4 order-1 order-lg-2">
+            <div
+              className="p-3 bg-body rounded-3 shadow overflow-hidden"
+              aria-labelledby="services-title"
+            >
+              <div className="px-3 py-3">
+                <div className="d-none p-3 rounded-3 shadow-md bg-warning bg-opacity-10">
+                  <div className="col-12 text-center ">
+                    <h4 className="fs-4 fw-semibold">
+                      Intraday{" "}
+                      <span className="fw-bold" style={{ color: "#FA5B05" }}>
+                        {" "}
+                        PRO{" "}
+                      </span>
+                    </h4>
+                    <ul className="list-unstyled mb-0">
+                      {segments.map((segment) => (
+                        <li
+                          className="small d-flex align-items-center "
+                          key={segment}
+                        >
+                          <i
+                            className={`bi bi-check-circle-fill fs-6 me-2 mt-1`}
+                            style={{ color: "#FA5B05" }}
+                          />
+                          {segment}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-              )}
-              {!loading && loadError && (
-                <div className="alert alert-danger mb-0" role="alert">
-                  <p className="mb-3">{loadError}</p>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    type="button"
-                    onClick={loadPlansAndStatuses}
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
-              {!loading && !loadError && !plans.length && (
-                <div className="alert alert-secondary mb-0">
-                  No subscription plans are available right now.
-                </div>
-              )}
-              {!loading && !loadError && (
-                <div className="d-grid gap-3 mb-2">
-                  {plans.map((plan) => {
-                    const selected = selectedPlanId === plan.id;
+                <header className="mb-2">
+                  <div className="text-center">
+                    <h4 className="fs-3 fw-semibold text-body-emphasis">
+                      Intraday{" "}
+                      <span className="fw-bold" style={{ color: "#FA5B05" }}>
+                        {" "}
+                        PRO{" "}
+                      </span>
+                    </h4>
+                    <p className="text-muted mb-1">(12 Months Subscription)</p>
+                    <p className="fs-4 mb-0 text-decoration-line-through">
+                      ₹60,000
+                    </p>
+                    <p className="display-6 fw-semibold mb-1 text-body-emphasis">
+                      ₹7,992
+                    </p>
+                    <p className="small text-secondary mb-0">+ GST @18%</p>
+                  </div>
+                  <hr />
+                </header>
 
-                    return (
-                      <label
-                        key={plan.id}
-                        htmlFor={`subscription-plan-${plan.id}`}
-                        className={`border rounded-3 p-3 ${selected ? "shadow-sm bg-warning bg-opacity-10 border-warning" : "bg-white"}`}
-                        // style={
-                        //   selected
-                        //     ? {
-                        //         borderColor: "#ff9f00",
-                        //         backgroundColor: "#fff9e8",
-                        //         cursor: "pointer",
-                        //       }
-                        //     : { cursor: "pointer" }
-                        // }
-                      >
-                        <div className="d-flex align-items-center justify-content-between gap-3">
-                          <div className="d-flex align-items-center gap-3">
-                            <input
-                              className="form-check-input mt-0 flex-shrink-0"
-                              id={`subscription-plan-${plan.id}`}
-                              type="radio"
-                              name="subscription-plan"
-                              value={plan.id}
-                              checked={selected}
-                              onChange={() => setSelectedPlanId(plan.id)}
-                              // style={{
-                              //   accentColor: "#FA5B05",
-                              //   transform: "scale(1.3)",
-                              // }}
-                            />
-                            <div>
-                              <strong className="d-block fs-6">
-                                {plan.name}
-                              </strong>
-                              <small>
-                                <small className="d-block text-muted mt-1">
-                                  {plan.note}
+                {loading && (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-warning" role="status">
+                      <span className="visually-hidden">Loading plans</span>
+                    </div>
+                  </div>
+                )}
+                {!loading && loadError && (
+                  <div className="alert alert-danger mb-0" role="alert">
+                    <p className="mb-3">{loadError}</p>
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      type="button"
+                      onClick={loadPlansAndStatuses}
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+                {!loading && !loadError && !plans.length && (
+                  <div className="alert alert-secondary mb-0">
+                    No subscription plans are available right now.
+                  </div>
+                )}
+                {!loading && !loadError && (
+                  <div className="d-grid gap-3 mb-2 d-none">
+                    {plans.map((plan) => {
+                      const selected = selectedPlanId === plan.id;
+
+                      return (
+                        <label
+                          key={plan.id}
+                          htmlFor={`subscription-plan-${plan.id}`}
+                          className={`border rounded-3 p-3 ${selected ? "shadow-sm bg-warning bg-opacity-10 border-warning" : "bg-white"}`}
+                          // style={
+                          //   selected
+                          //     ? {
+                          //         borderColor: "#ff9f00",
+                          //         backgroundColor: "#fff9e8",
+                          //         cursor: "pointer",
+                          //       }
+                          //     : { cursor: "pointer" }
+                          // }
+                        >
+                          <div className="d-flex align-items-center justify-content-between gap-3">
+                            <div className="d-flex align-items-center gap-3">
+                              <input
+                                className="form-check-input mt-0 flex-shrink-0"
+                                id={`subscription-plan-${plan.id}`}
+                                type="radio"
+                                name="subscription-plan"
+                                value={plan.id}
+                                checked={selected}
+                                onChange={() => setSelectedPlanId(plan.id)}
+                                // style={{
+                                //   accentColor: "#FA5B05",
+                                //   transform: "scale(1.3)",
+                                // }}
+                              />
+                              <div>
+                                <strong className="d-block fs-6">
+                                  {plan.name}
+                                </strong>
+                                <small>
+                                  <small className="d-block text-muted mt-1">
+                                    {plan.note}
+                                  </small>
                                 </small>
-                              </small>
-                              {/* {plan.cfPlanId && (
+                                {/* {plan.cfPlanId && (
                                 <small>
                                   {" "}
                                   <small className="d-block text-muted mt-1">
@@ -724,98 +787,98 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
                                   </small>
                                 </small>
                               )} */}
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="d-flex align-items-center gap-2 flex-shrink-0">
-                            <div className="text-end">
-                              {plan.originalPrice > plan.price && (
-                                <span className="small text-secondary text-decoration-line-through d-block pb-2">
-                                  {money(plan.originalPrice)}
-                                </span>
-                              )}
-                              <strong
-                                className="d-block lh-1"
-                                style={{ color: "#FA5B05" }}
-                              >
-                                {money(plan.total)}
-                              </strong>
+                            <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                              <div className="text-end">
+                                {plan.originalPrice > plan.price && (
+                                  <span className="small text-secondary text-decoration-line-through d-block pb-2">
+                                    {money(plan.originalPrice)}
+                                  </span>
+                                )}
+                                <strong
+                                  className="d-block lh-1"
+                                  style={{ color: "#FA5B05" }}
+                                >
+                                  {money(plan.total)}
+                                </strong>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-              {!loading &&
-                !loadError &&
-                plans.length > 0 &&
-                !statuses.paymentComplete && (
-                  <div className="form-check my-3 small">
-                    <input
-                      className="form-check-input"
-                      id="subscription-consent"
-                      type="checkbox"
-                      checked={termsAccepted}
-                      onChange={(event) =>
-                        setTermsAccepted(event.target.checked)
-                      }
-                      disabled={paymentLoading}
-                    />
-                    <label
-                      className="form-check-label text-muted small"
-                      htmlFor="subscription-consent"
-                    >
-                      I agree to the{" "}
-                      <a
-                        className="text-muted"
-                        href={termsConditionsUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        MITC
-                      </a>{" "}
-                      and{" "}
-                      <a
-                        className="text-muted"
-                        href={privacyPolicyUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Privacy Policy
-                      </a>
-                      .
-                    </label>
+                        </label>
+                      );
+                    })}
                   </div>
                 )}
-              {!loading && !loadError && plans.length > 0 && (
-                <>
-                  <button
-                    className={`btn btn-warning fw-semibold p-3 w-100 shadow-sm ${!statuses.paymentComplete ? "" : ""}`}
-                    type="button"
-                    disabled={
-                      !selectedPlan ||
-                      paymentLoading ||
-                      (!statuses.paymentComplete &&
-                        (!cashfreeReady || !termsAccepted))
-                    }
-                    onClick={handleSubscribe}
-                  >
-                    <span>
-                      {paymentLoading && (
-                        <span
-                          className="spinner-border spinner-border-sm me-2"
-                          aria-hidden="true"
-                        />
-                      )}
-                      {paymentLoading
-                        ? "Starting payment..."
-                        : statuses.paymentComplete
-                          ? "Continue"
-                          : "Pay Now"}
-                    </span>
-                    {/* {!paymentLoading &&
+                {!loading &&
+                  !loadError &&
+                  plans.length > 0 &&
+                  !statuses.paymentComplete && (
+                    <div className="form-check my-3">
+                      <input
+                        className="form-check-input"
+                        id="subscription-consent"
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={(event) =>
+                          setTermsAccepted(event.target.checked)
+                        }
+                        disabled={paymentLoading}
+                      />
+                      <label
+                        className="form-check-label text-muted small"
+                        htmlFor="subscription-consent"
+                      >
+                        I agree to the{" "}
+                        <a
+                          className="text-muted"
+                          href={termsConditionsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          MITC
+                        </a>{" "}
+                        and{" "}
+                        <a
+                          className="text-muted"
+                          href={privacyPolicyUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Privacy Policy
+                        </a>
+                        .
+                      </label>
+                    </div>
+                  )}
+                {!loading && !loadError && plans.length > 0 && (
+                  <>
+                    <button
+                      className={`btn btn-warning fw-semibold p-3 w-100 shadow-sm ${!statuses.paymentComplete ? "" : ""}`}
+                      type="button"
+                      disabled={
+                        !selectedPlan ||
+                        paymentLoading ||
+                        (!statuses.paymentComplete &&
+                          (!cashfreeReady || !termsAccepted))
+                      }
+                      onClick={handleSubscribe}
+                    >
+                      <span>
+                        {paymentLoading && (
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {paymentLoading
+                          ? "Starting payment..."
+                          : statuses.paymentComplete
+                            ? "Continue"
+                            : "Payable Amount ₹9,432"}
+                      </span>
+                      {/* {!paymentLoading &&
                       !statuses.paymentComplete &&
                       selectedPlan && (
                         <strong className="text-nowrap">
@@ -826,8 +889,8 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
                           />
                         </strong>
                       )} */}
-                  </button>
-                  {/* {!statuses.paymentComplete && selectedPlan?.cfPlanId && (
+                    </button>
+                    {/* {!statuses.paymentComplete && selectedPlan?.cfPlanId && (
                     <div className="d-flex align-items-center gap-3 mt-3">
                       <hr className="flex-grow-1 text-secondary" />
                       <p className="small text-secondary text-center text-nowrap mb-0">
@@ -840,26 +903,27 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
                       <hr className="flex-grow-1 text-secondary" />
                     </div>
                   )} */}
-                </>
-              )}
-              <div className="text-center mt-3">
-                <span className="small text-muted d-block">
-                  <small>SEBI Registered Research Analyst.</small>
-                </span>
-                {/* <br></br> */}
-                <span className="small text-muted">
-                  <small>SEBI Registration No.: INH000029829</small>
-                </span>
+                  </>
+                )}
+                <div className="text-center mt-3 d-none">
+                  <span className="small text-muted d-block">
+                    <small>SEBI Registered Research Analyst.</small>
+                  </span>
+                  {/* <br></br> */}
+                  <span className="small text-muted">
+                    <small>SEBI Registration No.: INH000029829</small>
+                  </span>
+                </div>
               </div>
-            </div>
-            {/* <div className="card-footer bg-light text-center text-secondary small py-3">
+              {/* <div className="card-footer bg-light text-center text-secondary small py-3">
               KYC is mandatory for all subscriptions. Market risks apply.
             </div> */}
+            </div>
+            {/* <AuthTrustBar /> */}
           </div>
-          {/* <AuthTrustBar /> */}
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 

@@ -99,13 +99,6 @@ section,
   color: transparent;
 }
 
-@media (min-width: 992px) {
-  .cash-intraday-chart-column {
-    z-index: 1;
-  }
-
-}
-
 @media (max-width: 575.98px) {
   .trading-services-copy {
     display: flex;

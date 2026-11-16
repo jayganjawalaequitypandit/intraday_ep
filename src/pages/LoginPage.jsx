@@ -149,7 +149,7 @@ function LoginPage({ onOtpSent, notify }) {
             Terms & Conditions.
           </a>
         </p>
-        <OfferCountdown />
+        {/* <OfferCountdown /> */}
       </form>
     </AuthPageLayout>
   );

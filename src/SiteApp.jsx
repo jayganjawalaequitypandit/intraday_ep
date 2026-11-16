@@ -75,14 +75,22 @@ const pagePaths = {
   "services-list": "/services-list",
   "cash-intraday-list": "/cash-intraday-list",
   "stock-future-intraday-list": "/stock-future-intraday-list",
-  "idt-landing-page" : "/idt-landing-page",
+  "idt-landing-page": "/idt-landing-page",
   dashboard: "/dashboard",
 };
 
 const dashboardNavigation = [
   { page: "dashboard", label: "Home", icon: "bi-house-door" },
-  { page: "live-calls-list", label: "Live Calls", icon: "bi-lightning-charge-fill" },
-  { page: "cash-intraday-list", label: "Cash Trades", icon: "bi-currency-rupee" },
+  {
+    page: "live-calls-list",
+    label: "Live Calls",
+    icon: "bi-lightning-charge-fill",
+  },
+  {
+    page: "cash-intraday-list",
+    label: "Cash Trades",
+    icon: "bi-currency-rupee",
+  },
   {
     page: "stock-future-intraday-list",
     label: "Future Trades",
@@ -107,10 +115,7 @@ function DashboardSidebar({ page, onNavigate }) {
         collapsed ? "col-lg-auto" : "col-lg-2"
       } bg-white border-end`}
     >
-      <aside
-        className={`sticky-top p-3`}
-        aria-label="Dashboard sidebar"
-      >
+      <aside className={`sticky-top p-3`} aria-label="Dashboard sidebar">
         <div
           className={`d-flex align-items-center mb-3 ${
             collapsed ? "justify-content-center" : "justify-content-between"
@@ -149,9 +154,7 @@ function DashboardSidebar({ page, onNavigate }) {
                 type="button"
                 className={`nav-link text-start d-flex align-items-center ${
                   collapsed ? "justify-content-center" : "gap-2"
-                } ${
-                  active ? "fw-semibold rounded-3" : "text-body-secondary"
-                }`}
+                } ${active ? "fw-semibold rounded-3" : "text-body-secondary"}`}
                 style={
                   active
                     ? { backgroundColor: "#FFF1E6", color: "#f6530b" }
@@ -188,7 +191,9 @@ function DashboardSidebar({ page, onNavigate }) {
             className={`nav-link text-start d-flex align-items-center ${
               collapsed ? "justify-content-center" : "gap-2"
             } ${
-              page === "profile" ? "fw-semibold rounded-3" : "text-body-secondary"
+              page === "profile"
+                ? "fw-semibold rounded-3"
+                : "text-body-secondary"
             }`}
             style={
               page === "profile"
@@ -209,7 +214,9 @@ function DashboardSidebar({ page, onNavigate }) {
               style={page === "profile" ? activeSidebarTextStyle : undefined}
             />
             {!collapsed && (
-              <span style={page === "profile" ? activeSidebarTextStyle : undefined}>
+              <span
+                style={page === "profile" ? activeSidebarTextStyle : undefined}
+              >
                 Profile
               </span>
             )}
@@ -222,8 +229,16 @@ function DashboardSidebar({ page, onNavigate }) {
 
 const mobileDashboardNavigation = [
   { page: "dashboard", label: "Home", icon: "bi-house-door" },
-  { page: "live-calls-list", label: "Live Calls", icon: "bi-lightning-charge-fill" },
-  { page: "cash-intraday-list", label: "Cash Trades", icon: "bi-currency-rupee" },
+  {
+    page: "live-calls-list",
+    label: "Live Calls",
+    icon: "bi-lightning-charge-fill",
+  },
+  {
+    page: "cash-intraday-list",
+    label: "Cash Trades",
+    icon: "bi-currency-rupee",
+  },
   {
     page: "stock-future-intraday-list",
     label: "Future Trades",
@@ -502,7 +517,8 @@ function pageFromPath(pathname) {
   if (normalizedPath === "/live-calls") return "live-calls";
   if (normalizedPath === "/service") return "services";
   if (normalizedPath === "/cash-intraday") return "cash-intraday";
-  if (normalizedPath === "/stock-future-intraday") return "stock-future-intraday";
+  if (normalizedPath === "/stock-future-intraday")
+    return "stock-future-intraday";
 
   return (
     Object.entries(pagePaths).find(
@@ -630,10 +646,9 @@ function SiteApp() {
         const nextStatuses = await refreshOnboardingStatuses(currentEapiAuth);
         if (resolutionId !== routeResolutionId.current) return null;
         if (!nextStatuses) {
-          const fallbackPage =
-            routeContext.dashboardEntry || routeContext.loginEntry
-              ? "dashboard"
-              : "services-list";
+          const fallbackPage = routeContext.dashboardEntry
+            ? "dashboard"
+            : "services-list";
           navigate(fallbackPage, true, { keepSearch: false });
           return fallbackPage;
         }
@@ -647,19 +662,21 @@ function SiteApp() {
           ? routeContext.destination
           : null;
 
-        const dashboardEntry =
-          routeContext.dashboardEntry || routeContext.loginEntry;
+        const paymentFirst =
+          routeContext.loginEntry || routeContext.paymentEntry;
         const nextPage = requestedPage
           ? requestedPage
-          : dashboardEntry
+          : routeContext.dashboardEntry
             ? "dashboard"
-            : !nextStatuses.kycComplete
-              ? "kyc"
-              : !nextStatuses.agreementComplete
-                ? "agreement"
-                : !paymentComplete
-                  ? "services-list"
-                  : "dashboard";
+            : paymentFirst && !paymentComplete
+              ? "services-list"
+              : !nextStatuses.kycComplete
+                ? "kyc"
+                : !nextStatuses.agreementComplete
+                  ? "agreement"
+                  : !paymentComplete
+                    ? "services-list"
+                    : "download";
         navigate(nextPage, true, { keepSearch: false });
         return nextPage;
       } catch (error) {
@@ -705,14 +722,21 @@ function SiteApp() {
   );
 
   const handleDashboardSubscribe = useCallback(() => {
-    navigate(
-      !userStatuses.kycComplete
-        ? "kyc"
-        : !userStatuses.agreementComplete
-          ? "agreement"
-          : "services-list",
-    );
-  }, [navigate, userStatuses.kycComplete, userStatuses.agreementComplete]);
+    navigate("services-list");
+  }, [navigate]);
+
+  const checkPaymentCompliance = useCallback(
+    () => refreshOnboardingStatuses(store.getState().eapiAuth),
+    [refreshOnboardingStatuses],
+  );
+  const handleComplianceRequired = useCallback(
+    (statuses) => {
+      navigate(!statuses?.kycComplete ? "kyc" : "agreement", false, {
+        keepSearch: false,
+      });
+    },
+    [navigate],
+  );
 
   const refreshMySubscription = useCallback(async () => {
     const response = await api.uapi.getMySubscription();
@@ -932,17 +956,35 @@ function SiteApp() {
       resolveOnboardingRoute({ dashboardEntry: true });
       return;
     }
-    if (page === "download" && authenticated) return;
+    if (page === "download" && authenticated) {
+      refreshOnboardingStatuses();
+      return;
+    }
+    if (["services-list", "pricing"].includes(page)) {
+      resolveOnboardingRoute({ paymentEntry: true });
+      return;
+    }
     if (protectedPages.includes(page)) {
       resolveOnboardingRoute();
       return;
     }
     if (page === "profile" && !authenticated) navigate("login-idt", true);
-  }, [navigate, page, resolveOnboardingRoute, hasMobileNumber, authenticated]);
+  }, [
+    navigate,
+    page,
+    resolveOnboardingRoute,
+    refreshOnboardingStatuses,
+    hasMobileNumber,
+    authenticated,
+  ]);
 
   useEffect(() => {
     if (
-      ["live-calls-list", "cash-intraday-list", "stock-future-intraday-list"].includes(page)
+      [
+        "live-calls-list",
+        "cash-intraday-list",
+        "stock-future-intraday-list",
+      ].includes(page)
     ) {
       resolveOnboardingRoute({ destination: page });
     }
@@ -1028,9 +1070,16 @@ function SiteApp() {
       // className={`min-vh-100 d-flex flex-column ${usesOnboardingBackground ? "bg-body-tertiary" : "bg-white"}`}
       className={`min-vh-100 d-flex flex-column bg-body page-${page}`}
     >
-      {!["home-idt", "login-idt", "idt-login", "verify-otp-idt","services", "live-calls","cash-intraday","stock-future-intraday"].includes(
-        page,
-      ) && (
+      {![
+        "home-idt",
+        "login-idt",
+        "idt-login",
+        "verify-otp-idt",
+        "services",
+        "live-calls",
+        "cash-intraday",
+        "stock-future-intraday",
+      ].includes(page) && (
         <SiteHeader
           isHome={page === "home" || page === "idt-landing"}
           onHome={() => navigate("idt-landing")}
@@ -1047,7 +1096,9 @@ function SiteApp() {
             resolveOnboardingRoute({ destination: "cash-intraday-list" })
           }
           onStockFutureIntraday={() =>
-            resolveOnboardingRoute({ destination: "stock-future-intraday-list" })
+            resolveOnboardingRoute({
+              destination: "stock-future-intraday-list",
+            })
           }
           notify={notify}
           onLogout={() => {
@@ -1066,16 +1117,28 @@ function SiteApp() {
         <HomePage onGetStarted={() => navigate("login-idt")} />
       )}
       {page === "services" && !authenticated && (
-        <SubscribeCallsOverlay page={page} onSubscribe={() => navigate("login-idt")} />
+        <SubscribeCallsOverlay
+          page={page}
+          onSubscribe={() => navigate("login-idt")}
+        />
       )}
       {page === "live-calls" && !authenticated && (
-        <SubscribeCallsOverlay page={page} onSubscribe={() => navigate("login-idt")} />
+        <SubscribeCallsOverlay
+          page={page}
+          onSubscribe={() => navigate("login-idt")}
+        />
       )}
       {page === "cash-intraday" && !authenticated && (
-        <SubscribeCallsOverlay page={page} onSubscribe={() => navigate("login-idt")} />
+        <SubscribeCallsOverlay
+          page={page}
+          onSubscribe={() => navigate("login-idt")}
+        />
       )}
       {page === "stock-future-intraday" && !authenticated && (
-        <SubscribeCallsOverlay page={page} onSubscribe={() => navigate("login-idt")} />
+        <SubscribeCallsOverlay
+          page={page}
+          onSubscribe={() => navigate("login-idt")}
+        />
       )}
       {page === "home-idt" && !authenticated && (
         <HomeIdt
@@ -1213,8 +1276,8 @@ function SiteApp() {
               nextPage === "profile"
                 ? navigate("profile")
                 : nextPage === "dashboard"
-                ? resolveOnboardingRoute({ dashboardEntry: true })
-                : resolveOnboardingRoute({ destination: nextPage })
+                  ? resolveOnboardingRoute({ dashboardEntry: true })
+                  : resolveOnboardingRoute({ destination: nextPage })
             }
           />
           <div className="col d-flex flex-column">
@@ -1302,6 +1365,8 @@ function SiteApp() {
         <ServiceListPage
           onContinue={resolveOnboardingRoute}
           onStatusChange={updateUserStatuses}
+          onCheckCompliance={checkPaymentCompliance}
+          onComplianceRequired={handleComplianceRequired}
           notify={notify}
         />
       )}
@@ -1309,6 +1374,8 @@ function SiteApp() {
         <PricingPage
           onContinue={resolveOnboardingRoute}
           onStatusChange={updateUserStatuses}
+          onCheckCompliance={checkPaymentCompliance}
+          onComplianceRequired={handleComplianceRequired}
           notify={notify}
         />
       )}

@@ -319,7 +319,7 @@ function LoginPagePreview({
                   </button>
                 ))}
               </div>
-              {showOfferTimer && <OfferCountdown contained />}
+              {/* {showOfferTimer && <OfferCountdown contained />} */}
             </form>
             <div className=" d-block mb-2 mt-4">
               <AuthTrustBar />

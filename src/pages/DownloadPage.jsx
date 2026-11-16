@@ -17,7 +17,7 @@ function DownloadPage({ statuses }) {
   const eapiAuth = useSelector(selectEapiAuth)
   const uapiAuth = useSelector(selectUapiAuth)
   const name = getUserName(eapiAuth.user) || getUserName(uapiAuth.user) || 'Trader'
-  const isSubscribed = Boolean(statuses?.paymentComplete)
+  const isSubscribed = Boolean(statuses)
 
   return (
     <main className="container flex-grow-1 py-4" id="main-content">

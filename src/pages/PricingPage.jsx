@@ -562,7 +562,32 @@ function normalizePlan(plan, index) {
   };
 }
 
-function ServiceListPage({ onContinue, onStatusChange, notify }) {
+const PENDING_PLAN_KEY = "idt:pendingPaymentPlanId";
+
+function readPendingPlanId() {
+  try {
+    return sessionStorage.getItem(PENDING_PLAN_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writePendingPlanId(planId) {
+  try {
+    if (planId) sessionStorage.setItem(PENDING_PLAN_KEY, planId);
+    else sessionStorage.removeItem(PENDING_PLAN_KEY);
+  } catch {
+    // Storage unavailable (private mode etc.) — plan simply won't be preselected.
+  }
+}
+
+function ServiceListPage({
+  onContinue,
+  onStatusChange,
+  onCheckCompliance,
+  onComplianceRequired,
+  notify,
+}) {
   const eapiAuth = useSelector(selectEapiAuth);
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState("");
@@ -624,10 +649,13 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
         .filter((plan) => plan.isShow === true)
         .map(normalizePlan);
       setPlans(nextPlans);
+      const pendingPlanId = readPendingPlanId();
       setSelectedPlanId((currentId) =>
         nextPlans.some((plan) => plan.id === currentId)
           ? currentId
-          : nextPlans[0]?.id || "",
+          : nextPlans.some((plan) => plan.id === pendingPlanId)
+            ? pendingPlanId
+            : nextPlans[0]?.id || "",
       );
 
       const statusResponse =
@@ -709,6 +737,33 @@ function ServiceListPage({ onContinue, onStatusChange, notify }) {
       notify("error", "Please accept the MITC and Privacy Policy to subscribe");
       return;
     }
+
+    setPaymentLoading(true);
+    let latestStatuses = statuses;
+    try {
+      latestStatuses = (await onCheckCompliance?.()) || statuses;
+    } finally {
+      setPaymentLoading(false);
+    }
+
+    if (latestStatuses.paymentComplete) {
+      writePendingPlanId("");
+      onContinue({ plan: selectedPlan, statuses: latestStatuses });
+      return;
+    }
+
+    if (!latestStatuses.kycComplete || !latestStatuses.agreementComplete) {
+      writePendingPlanId(selectedPlan.id);
+      notify(
+        "error",
+        !latestStatuses.kycComplete
+          ? "Please complete your KYC before making the payment"
+          : "Please sign the agreement before making the payment",
+      );
+      onComplianceRequired?.(latestStatuses);
+      return;
+    }
+    writePendingPlanId("");
 
     const recurringPayment = Boolean(selectedPlan.cfPlanId);
     const checkoutAvailable = recurringPayment

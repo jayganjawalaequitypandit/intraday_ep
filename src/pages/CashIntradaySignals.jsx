@@ -28,6 +28,9 @@ function getPageData(response) {
       payload.todaysBreakdownPL ?? payload.meta?.todaysBreakdownPL,
     totalBreakout: payload.totalBreakout ?? payload.meta?.totalBreakout,
     totalBreakdown: payload.totalBreakdown ?? payload.meta?.totalBreakdown,
+    executedTrades: payload.executedTrades ?? payload.meta?.executedTrades,
+    targetAchieved: payload.targetAchieved ?? payload.meta?.targetAchieved,
+    slTriggered: payload.slTriggered ?? payload.meta?.slTriggered,
   };
 }
 
@@ -63,17 +66,7 @@ function getRationaleUrl(path) {
   return new URL(path.replace(/^\/+/, ""), apiBase).toString();
 }
 
-function SignalCard({ signal, selected, onSelect }) {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const desktopQuery = window.matchMedia("(min-width: 992px)");
-    const updateDesktop = () => setIsDesktop(desktopQuery.matches);
-    updateDesktop();
-    desktopQuery.addEventListener("change", updateDesktop);
-    return () => desktopQuery.removeEventListener("change", updateDesktop);
-  }, []);
-
+function SignalCard({ signal, selected, onSelect, isDesktop }) {
   const isBuy = signal.signalType === "bullish";
   const status = signal.signalStatus?.toLowerCase() ?? "";
   const stopLoss = signal.sl;
@@ -167,7 +160,6 @@ function SignalCard({ signal, selected, onSelect }) {
                   P&amp;L<span className="d-lg-none">:</span>
                 </small>
                 <strong className="small text-nowrap lh-sm fw-medium">
-                  <span>{profitLoss > 0 ? "+" : ""}</span>
                   {formatProfitLoss(signal.pl)}
                   <i
                     className="bi bi-chevron-right d-lg-none position-absolute top-50 end-0 translate-middle-y me-2"
@@ -273,6 +265,7 @@ function SignalCard({ signal, selected, onSelect }) {
 }
 
 export default function CashIntradaySignals() {
+  const [isDesktop, setIsDesktop] = useState(false);
   const [signalType, setSignalType] = useState("bullish");
   const [perPage, setPerPage] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
@@ -281,8 +274,17 @@ export default function CashIntradaySignals() {
   const [meta, setMeta] = useState({});
   const [todayPL, setTodayPL] = useState({ breakout: null, breakdown: null });
   const [signalCounts, setSignalCounts] = useState({});
+  const [tradeSummary, setTradeSummary] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 992px)");
+    const updateDesktop = () => setIsDesktop(desktopQuery.matches);
+    updateDesktop();
+    desktopQuery.addEventListener("change", updateDesktop);
+    return () => desktopQuery.removeEventListener("change", updateDesktop);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -309,12 +311,18 @@ export default function CashIntradaySignals() {
           bullish: pageData.totalBreakout,
           bearish: pageData.totalBreakdown,
         });
+        setTradeSummary({
+          executedTrades: pageData.executedTrades ?? 0,
+          targetAchieved: pageData.targetAchieved ?? 0,
+          slTriggered: pageData.slTriggered ?? 0,
+        });
       })
       .catch((requestError) => {
         if (controller.signal.aborted) return;
         setError(requestError.message || "Unable to load cash intraday calls.");
         setDataList([]);
         setMeta({});
+        setTradeSummary({});
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
@@ -327,6 +335,12 @@ export default function CashIntradaySignals() {
   const totalPages = Number(meta.totalPages ?? 0);
   const canGoNext = currentPage < totalPages;
   const generatedDate = formatGeneratedAt(meta.lastUpdatedAt);
+  const selectedPL =
+    signalType === "bullish" ? todayPL.breakout : todayPL.breakdown;
+  const numericSelectedPL =
+    selectedPL === null || selectedPL === undefined || selectedPL === ""
+      ? Number.NaN
+      : Number(selectedPL);
   const selectedSignal =
     dataList.find((signal) => String(signal.coCode) === selectedCoCode) ??
     dataList[0] ??
@@ -348,7 +362,10 @@ export default function CashIntradaySignals() {
       offcanvasElement &&
       window.getComputedStyle(offcanvasElement).position === "fixed"
     ) {
-      Offcanvas.getOrCreateInstance(offcanvasElement).show();
+      Offcanvas.getOrCreateInstance(offcanvasElement, {
+        backdrop: true,
+        scroll: false,
+      }).show();
     }
   };
 
@@ -358,54 +375,99 @@ export default function CashIntradaySignals() {
         <DashboardBreadcrumb currentPage="Cash Intraday" />
         <div className="row justify-content-start">
           <div className="col-12">
-            <div className="mb-3">
-              <h1 className="fs-2 fw-bold mb-1">Cash Intraday Calls</h1>
-              {generatedDate && (
-                <p className="small text-body-secondary mb-0">
-                  Generated on {generatedDate}
-                </p>
-              )}
-            </div>
-
-            <div className="d-flex flex-nowrap align-items-center justify-content-between gap-2 mb-3">
-              <div
-                className="d-inline-flex align-items-center gap-1 rounded-pill border bg-white p-1 shadow-sm flex-shrink-0"
-                role="tablist"
-                aria-label="Cash intraday signal direction"
-              >
-                {[
-                  ["bullish", "Buy"],
-                  ["bearish", "Sell"],
-                ].map(([value, label]) => {
-                  const active = signalType === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      className={`btn btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 ${active ? "bg-success bg-opacity-10 text-success" : "text-body-secondary"}`}
-                      onClick={() => changeSignalType(value)}
-                    >
-                      {label}
-                      <span
-                        className={`badge d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle p-1 small ${active ? "bg-white text-success" : "bg-dark text-white"}`}
-                      >
-                        {signalCounts[value]}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="d-inline-flex align-items-center rounded-3 border bg-white px-2 py-1 shadow-sm flex-shrink-0">
-                <strong className="small text-body-emphasis text-nowrap">
-                  ₹{" "}
-                  {formatProfitLoss(
-                    signalType === "bullish"
-                      ? todayPL.breakout
-                      : todayPL.breakdown,
+            <div className="row g-0 mb-3 rounded-3 border bg-white">
+              <div className="col-12 col-lg-5 p-3">
+                <div className="mb-3">
+                  <h1 className="fs-2 fw-bold mb-1">Cash Intraday Calls</h1>
+                  {generatedDate && (
+                    <p className="small text-body-secondary mb-0">
+                      Generated on {generatedDate}
+                    </p>
                   )}
-                </strong>
+                </div>
+                <div className="d-flex flex-nowrap align-items-center gap-2">
+                  <div
+                    className="d-inline-flex align-items-center overflow-hidden rounded-pill border bg-white shadow-sm flex-shrink-0"
+                    role="tablist"
+                    aria-label="Cash intraday signal direction"
+                  >
+                    {[
+                      ["bullish", "Buy trades"],
+                      ["bearish", "Sell trades"],
+                    ].map(([value, label]) => {
+                      const active = signalType === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          className={`btn btn-sm d-inline-flex align-items-center gap-2 border-0 rounded-0 px-3 ${active ? "bg-success bg-opacity-10 text-success" : "text-body-emphasis"}`}
+                          onClick={() => changeSignalType(value)}
+                        >
+                          {label}
+                          <span
+                            className={`badge d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle p-1 small ${active ? "bg-white text-success" : "bg-dark text-white"}`}
+                          >
+                            {signalCounts[value]}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div className="col-12 col-lg-7 overflow-hidden">
+                <div className="row g-0 h-100 flex-nowrap flex-lg-wrap overflow-auto dashboard-indices-scroll">
+                  <div className="col-8 col-lg-3 flex-shrink-0 position-relative d-flex flex-column justify-content-center p-3 my-lg-3">
+                    <span
+                      className="position-absolute top-0 bottom-0 start-0 border-start d-none d-lg-block"
+                      aria-hidden="true"
+                    />
+                    <span className="text-body-secondary text-nowrap">
+                      Executed Trades
+                    </span>
+                    <strong className="fs-4 lh-sm text-body-emphasis">
+                      {tradeSummary.executedTrades ?? 0}
+                    </strong>
+                  </div>
+
+                  <div className="col-8 col-lg-3 flex-shrink-0 d-flex flex-column justify-content-center border-start p-3 my-lg-3">
+                    <span className="text-body-secondary text-nowrap">
+                      Target Achieved
+                    </span>
+                    <strong className="fs-4 lh-sm text-body-emphasis">
+                      {tradeSummary.targetAchieved ?? 0}
+                    </strong>
+                  </div>
+
+                  <div className="col-8 col-lg-3 flex-shrink-0 d-flex flex-column justify-content-center border-start p-3 my-lg-3">
+                    <span className="text-body-secondary text-nowrap">
+                      SL Triggered
+                    </span>
+                    <strong className="fs-4 lh-sm text-body-emphasis">
+                      {tradeSummary.slTriggered ?? 0}
+                    </strong>
+                  </div>
+
+                  <div className="col-8 col-lg-3 flex-shrink-0 d-flex flex-column justify-content-center border-start p-3 my-lg-3">
+                    <span className="text-body-secondary text-nowrap">
+                      Day&apos;s P&amp;L
+                    </span>
+                    <strong
+                      className={`fs-4 lh-sm ${
+                        Number.isFinite(numericSelectedPL) &&
+                        numericSelectedPL < 0
+                          ? "text-danger"
+                          : Number.isFinite(numericSelectedPL)
+                            ? "text-success"
+                            : "text-body-secondary"
+                      }`}
+                    >
+                      ₹ {formatProfitLoss(selectedPL)}
+                    </strong>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -431,6 +493,7 @@ export default function CashIntradaySignals() {
                     <SignalCard
                       key={signal.coCode}
                       signal={signal}
+                      isDesktop={isDesktop}
                       selected={
                         String(signal.coCode) === String(selectedSignal?.coCode)
                       }
@@ -517,7 +580,10 @@ export default function CashIntradaySignals() {
                   </div>
                 </div>
               </div>
-              <div className="col-12 col-lg-6 order-2 sticky-lg-top align-self-start cash-intraday-chart-column">
+              <div
+                className="col-12 col-lg-6 order-2 sticky-lg-top align-self-start"
+                style={{ zIndex: isDesktop ? 1 : "auto" }}
+              >
                 <div
                   className="offcanvas-lg offcanvas-bottom h-auto overflow-y-auto w-100"
                   tabIndex="-1"

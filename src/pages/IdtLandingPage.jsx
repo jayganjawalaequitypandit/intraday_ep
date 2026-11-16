@@ -973,15 +973,6 @@ function IdtLandingPage({ onLogin, onOtpSent, notify }) {
               </details>
 
               <details>
-                <summary>{"How much does it cost?"}</summary>
-                <p>
-                  {
-                    "₹999 for 1 month, ₹2,697 for 3 months or ₹7,992 for 12 months. That works out to ₹33, ₹30 and ₹22 a day."
-                  }
-                </p>
-              </details>
-
-              <details>
                 <summary>{"How do I receive the trades?"}</summary>
                 <p>
                   {
