@@ -217,13 +217,12 @@ export default function IntradaySignalChart({ signal }) {
     { label: "T3", value: signal?.t3, triggerAt: signal?.t3TriggerAt },
   ];
   const hitTimeline = [
+    ...(signal?.executedAt
+      ? [{ label: "Executed", triggerAt: signal.executedAt }]
+      : []),
     ...targetTimeline
       .filter(({ triggerAt }) => Boolean(triggerAt))
-      .map(({ label, triggerAt }) => ({
-        label: `${label} hit`,
-        triggerAt,
-        isStopLoss: false,
-      })),
+      .map(({ label, triggerAt }) => ({ label: `${label} hit`, triggerAt })),
     ...(signal?.slTriggerAt
       ? [{ label: "SL hit", triggerAt: signal.slTriggerAt, isStopLoss: true }]
       : []),
@@ -590,9 +589,7 @@ export default function IntradaySignalChart({ signal }) {
                     <div
                       className={`d-flex flex-grow-1 align-items-center justify-content-between rounded-3 px-2 py-2 small ${isStopLoss ? "bg-danger bg-opacity-10 text-danger" : "bg-success bg-opacity-10 text-success"}`}
                     >
-                      <span className="fw-semibold">
-                        {label.replace(" hit", "")} hit
-                      </span>
+                      <span className="fw-semibold">{label}</span>
                       <span className="fw-semibold text-body-emphasis">
                         {formatTriggerTime(triggerAt)}
                       </span>

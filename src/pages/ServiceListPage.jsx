@@ -316,7 +316,9 @@ function normalizePlan(plan, index) {
   const price = Number(months * (plan.discountedPrice ?? 0));
   const originalPrice = Number(months * (plan.actualPrice ?? 0));
   const name =
-    plan.name || plan.title || `${months} ${months === 1 ? "Month" : "Months"}`;
+    plan.packageName ||
+    plan.title ||
+    `${months} ${months === 1 ? "Month" : "Months"}`;
   const note = plan.note;
 
   return {
