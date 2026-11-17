@@ -541,6 +541,8 @@ function SiteApp() {
     agreementComplete: false,
     paymentComplete: false,
   });
+  const [onboardingStatusesLoaded, setOnboardingStatusesLoaded] =
+    useState(false);
   const [resolvingRoute, setResolvingRoute] = useState(false);
   const routeResolutionId = useRef(0);
   const [status, setStatus] = useState("");
@@ -613,6 +615,7 @@ function SiteApp() {
           agreementComplete,
         };
         setUserStatuses(nextStatuses);
+        setOnboardingStatusesLoaded(true);
         return nextStatuses;
       } catch (error) {
         notify(
@@ -1102,6 +1105,7 @@ function SiteApp() {
           }
           notify={notify}
           onLogout={() => {
+            setOnboardingStatusesLoaded(false);
             setUserStatuses({
               kycComplete: false,
               agreementComplete: false,
@@ -1289,7 +1293,9 @@ function SiteApp() {
                 <SubscribeCallsOverlay
                   page={page}
                   onSubscribe={() => navigate("pricing")}
-                  complianceStatuses={userStatuses}
+                  complianceStatuses={
+                    onboardingStatusesLoaded ? userStatuses : null
+                  }
                   onKyc={() => navigate("kyc")}
                   onAgreement={() => navigate("agreement")}
                 />
@@ -1306,7 +1312,9 @@ function SiteApp() {
                 <SubscribeCallsOverlay
                   page={page}
                   onSubscribe={() => navigate("pricing")}
-                  complianceStatuses={userStatuses}
+                  complianceStatuses={
+                    onboardingStatusesLoaded ? userStatuses : null
+                  }
                   onKyc={() => navigate("kyc")}
                   onAgreement={() => navigate("agreement")}
                 />
@@ -1322,7 +1330,9 @@ function SiteApp() {
                 <SubscribeCallsOverlay
                   page={page}
                   onSubscribe={() => navigate("pricing")}
-                  complianceStatuses={userStatuses}
+                  complianceStatuses={
+                    onboardingStatusesLoaded ? userStatuses : null
+                  }
                   onKyc={() => navigate("kyc")}
                   onAgreement={() => navigate("agreement")}
                 />
