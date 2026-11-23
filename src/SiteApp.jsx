@@ -81,16 +81,8 @@ const pagePaths = {
 
 const dashboardNavigation = [
   { page: "dashboard", label: "Home", icon: "bi-house-door" },
-  {
-    page: "live-calls-list",
-    label: "Live Calls",
-    icon: "bi-lightning-charge-fill",
-  },
-  {
-    page: "cash-intraday-list",
-    label: "Cash Trades",
-    icon: "bi-currency-rupee",
-  },
+  { page: "live-calls-list", label: "Live Calls", icon: "bi-lightning-charge-fill" },
+  { page: "cash-intraday-list", label: "Cash Trades", icon: "bi-currency-rupee" },
   {
     page: "stock-future-intraday-list",
     label: "Future Trades",
@@ -111,15 +103,16 @@ function DashboardSidebar({ page, onNavigate }) {
 
   return (
     <div
-      className={`d-none d-lg-block ${
-        collapsed ? "col-lg-auto" : "col-lg-2"
-      } bg-white border-end`}
+      className={`d-none d-lg-block ${collapsed ? "col-lg-auto" : "col-lg-2"
+        } bg-white border-end`}
     >
-      <aside className={`sticky-top p-3`} aria-label="Dashboard sidebar">
+      <aside
+        className={`sticky-top p-3`}
+        aria-label="Dashboard sidebar"
+      >
         <div
-          className={`d-flex align-items-center mb-3 ${
-            collapsed ? "justify-content-center" : "justify-content-between"
-          }`}
+          className={`d-flex align-items-center mb-3 ${collapsed ? "justify-content-center" : "justify-content-between"
+            }`}
         >
           {!collapsed && (
             <p className="small fw-bold text-body-secondary text-uppercase mb-0">
@@ -135,9 +128,8 @@ function DashboardSidebar({ page, onNavigate }) {
             onClick={() => setCollapsed((isCollapsed) => !isCollapsed)}
           >
             <i
-              className={`bi ${
-                collapsed ? "bi-chevron-bar-right" : "bi-chevron-bar-left"
-              }`}
+              className={`bi ${collapsed ? "bi-chevron-bar-right" : "bi-chevron-bar-left"
+                }`}
               aria-hidden="true"
             />
           </button>
@@ -152,9 +144,9 @@ function DashboardSidebar({ page, onNavigate }) {
               <button
                 key={item.page}
                 type="button"
-                className={`nav-link text-start d-flex align-items-center ${
-                  collapsed ? "justify-content-center" : "gap-2"
-                } ${active ? "fw-semibold rounded-3" : "text-body-secondary"}`}
+                className={`nav-link text-start d-flex align-items-center ${collapsed ? "justify-content-center" : "gap-2"
+                  } ${active ? "fw-semibold rounded-3" : "text-body-secondary"
+                  }`}
                 style={
                   active
                     ? { backgroundColor: "#FFF1E6", color: "#f6530b" }
@@ -188,13 +180,9 @@ function DashboardSidebar({ page, onNavigate }) {
         >
           <button
             type="button"
-            className={`nav-link text-start d-flex align-items-center ${
-              collapsed ? "justify-content-center" : "gap-2"
-            } ${
-              page === "profile"
-                ? "fw-semibold rounded-3"
-                : "text-body-secondary"
-            }`}
+            className={`nav-link text-start d-flex align-items-center ${collapsed ? "justify-content-center" : "gap-2"
+              } ${page === "profile" ? "fw-semibold rounded-3" : "text-body-secondary"
+              }`}
             style={
               page === "profile"
                 ? { backgroundColor: "#FFF1E6", color: "#f6530b" }
@@ -214,9 +202,7 @@ function DashboardSidebar({ page, onNavigate }) {
               style={page === "profile" ? activeSidebarTextStyle : undefined}
             />
             {!collapsed && (
-              <span
-                style={page === "profile" ? activeSidebarTextStyle : undefined}
-              >
+              <span style={page === "profile" ? activeSidebarTextStyle : undefined}>
                 Profile
               </span>
             )}
@@ -229,16 +215,8 @@ function DashboardSidebar({ page, onNavigate }) {
 
 const mobileDashboardNavigation = [
   { page: "dashboard", label: "Home", icon: "bi-house-door" },
-  {
-    page: "live-calls-list",
-    label: "Live Calls",
-    icon: "bi-lightning-charge-fill",
-  },
-  {
-    page: "cash-intraday-list",
-    label: "Cash Trades",
-    icon: "bi-currency-rupee",
-  },
+  { page: "live-calls-list", label: "Live Calls", icon: "bi-lightning-charge-fill" },
+  { page: "cash-intraday-list", label: "Cash Trades", icon: "bi-currency-rupee" },
   {
     page: "stock-future-intraday-list",
     label: "Future Trades",
@@ -256,21 +234,20 @@ function MobileDashboardNavigation({ page, onNavigate }) {
         const active = page === item.page;
         const activeGradientStyle = active
           ? {
-              backgroundImage:
-                "linear-gradient(90deg, #fe7902 0%, #f6530b 100%)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              color: "#f6530b",
-              WebkitTextFillColor: "transparent",
-            }
+            backgroundImage:
+              "linear-gradient(90deg, #fe7902 0%, #f6530b 100%)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            color: "#f6530b",
+            WebkitTextFillColor: "transparent",
+          }
           : undefined;
         return (
           <button
             key={item.page}
             type="button"
-            className={`btn btn-sm flex-fill d-flex flex-column align-items-center justify-content-center gap-1 p-1 rounded-0 border-0 ${
-              active ? "fw-bold" : "text-light"
-            }`}
+            className={`btn btn-sm flex-fill d-flex flex-column align-items-center justify-content-center gap-1 p-1 rounded-0 border-0 ${active ? "fw-bold" : "text-light"
+              }`}
             aria-current={active ? "page" : undefined}
             onClick={() => onNavigate(item.page)}
           >
@@ -517,8 +494,7 @@ function pageFromPath(pathname) {
   if (normalizedPath === "/live-calls") return "live-calls";
   if (normalizedPath === "/service") return "services";
   if (normalizedPath === "/cash-intraday") return "cash-intraday";
-  if (normalizedPath === "/stock-future-intraday")
-    return "stock-future-intraday";
+  if (normalizedPath === "/stock-future-intraday") return "stock-future-intraday";
 
   return (
     Object.entries(pagePaths).find(
@@ -665,21 +641,17 @@ function SiteApp() {
           ? routeContext.destination
           : null;
 
-        const paymentFirst =
-          routeContext.loginEntry || routeContext.paymentEntry;
         const nextPage = requestedPage
           ? requestedPage
           : routeContext.dashboardEntry
             ? "dashboard"
-            : paymentFirst && !paymentComplete
+            : !paymentComplete
               ? "services-list"
               : !nextStatuses.kycComplete
                 ? "kyc"
                 : !nextStatuses.agreementComplete
                   ? "agreement"
-                  : !paymentComplete
-                    ? "services-list"
-                    : "download";
+                  : "download";
         navigate(nextPage, true, { keepSearch: false });
         return nextPage;
       } catch (error) {
@@ -728,19 +700,6 @@ function SiteApp() {
     navigate("services-list");
   }, [navigate]);
 
-  const checkPaymentCompliance = useCallback(
-    () => refreshOnboardingStatuses(store.getState().eapiAuth),
-    [refreshOnboardingStatuses],
-  );
-  const handleComplianceRequired = useCallback(
-    (statuses) => {
-      navigate(!statuses?.kycComplete ? "kyc" : "agreement", false, {
-        keepSearch: false,
-      });
-    },
-    [navigate],
-  );
-
   const refreshMySubscription = useCallback(async () => {
     const response = await api.uapi.getMySubscription();
     const payload = response?.data?.data ?? response?.data ?? response ?? {};
@@ -750,8 +709,8 @@ function SiteApp() {
     setSubscriptionStatus(
       String(
         subscription?.subscriptionStatus ??
-          subscription?.subscription_status ??
-          "",
+        subscription?.subscription_status ??
+        "",
       )
         .trim()
         .toLowerCase(),
@@ -963,31 +922,16 @@ function SiteApp() {
       refreshOnboardingStatuses();
       return;
     }
-    if (["services-list", "pricing"].includes(page)) {
-      resolveOnboardingRoute({ paymentEntry: true });
-      return;
-    }
     if (protectedPages.includes(page)) {
       resolveOnboardingRoute();
       return;
     }
     if (page === "profile" && !authenticated) navigate("login-idt", true);
-  }, [
-    navigate,
-    page,
-    resolveOnboardingRoute,
-    refreshOnboardingStatuses,
-    hasMobileNumber,
-    authenticated,
-  ]);
+  }, [navigate, page, resolveOnboardingRoute, hasMobileNumber, authenticated]);
 
   useEffect(() => {
     if (
-      [
-        "live-calls-list",
-        "cash-intraday-list",
-        "stock-future-intraday-list",
-      ].includes(page)
+      ["live-calls-list", "cash-intraday-list", "stock-future-intraday-list"].includes(page)
     ) {
       resolveOnboardingRoute({ destination: page });
     }
@@ -1083,40 +1027,40 @@ function SiteApp() {
         "cash-intraday",
         "stock-future-intraday",
       ].includes(page) && (
-        <SiteHeader
-          isHome={page === "home" || page === "idt-landing"}
-          onHome={() => navigate("idt-landing")}
-          onLogin={() => navigate("login-idt")}
-          onProfile={() => navigate("profile")}
-          onDashboard={() => resolveOnboardingRoute({ dashboardEntry: true })}
-          onDownload={() => navigate("download")}
-          onKyc={resolveOnboardingRoute}
-          onAgreement={resolveOnboardingRoute}
-          onLiveCalls={() =>
-            resolveOnboardingRoute({ destination: "live-calls-list" })
-          }
-          onCashIntraday={() =>
-            resolveOnboardingRoute({ destination: "cash-intraday-list" })
-          }
-          onStockFutureIntraday={() =>
-            resolveOnboardingRoute({
-              destination: "stock-future-intraday-list",
-            })
-          }
-          notify={notify}
-          onLogout={() => {
-            setOnboardingStatusesLoaded(false);
-            setUserStatuses({
-              kycComplete: false,
-              agreementComplete: false,
-              paymentComplete: false,
-            });
-            navigate("login-idt", true);
-          }}
-          statuses={userStatuses}
-          hideLogin={["verify-otp", "details"].includes(page)}
-        />
-      )}
+          <SiteHeader
+            isHome={page === "home" || page === "idt-landing"}
+            onHome={() => navigate("idt-landing")}
+            onLogin={() => navigate("login-idt")}
+            onProfile={() => navigate("profile")}
+            onDashboard={() => resolveOnboardingRoute({ dashboardEntry: true })}
+            onDownload={() => navigate("download")}
+            onKyc={resolveOnboardingRoute}
+            onAgreement={resolveOnboardingRoute}
+            onLiveCalls={() =>
+              resolveOnboardingRoute({ destination: "live-calls-list" })
+            }
+            onCashIntraday={() =>
+              resolveOnboardingRoute({ destination: "cash-intraday-list" })
+            }
+            onStockFutureIntraday={() =>
+              resolveOnboardingRoute({
+                destination: "stock-future-intraday-list",
+              })
+            }
+            notify={notify}
+            onLogout={() => {
+              setOnboardingStatusesLoaded(false);
+              setUserStatuses({
+                kycComplete: false,
+                agreementComplete: false,
+                paymentComplete: false,
+              });
+              navigate("login-idt", true);
+            }}
+            statuses={userStatuses}
+            hideLogin={["verify-otp", "details"].includes(page)}
+          />
+        )}
       {page === "home" && !authenticated && (
         <HomePage onGetStarted={() => navigate("login-idt")} />
       )}
@@ -1174,10 +1118,10 @@ function SiteApp() {
             authenticated
               ? resolveOnboardingRoute()
               : navigate("login-idt", false, {
-                  source:
-                    new URLSearchParams(window.location.search).get("sr") ||
-                    "idt-home",
-                })
+                source:
+                  new URLSearchParams(window.location.search).get("sr") ||
+                  "idt-home",
+              })
           }
           onOtpSent={() =>
             navigate("verify-otp-idt", false, {
@@ -1273,110 +1217,107 @@ function SiteApp() {
         "stock-future-intraday-list",
         "profile",
       ].includes(page) && (
-        <div className="row g-0 flex-grow-1">
-          <DashboardSidebar
-            page={page}
-            onNavigate={(nextPage) =>
-              nextPage === "profile"
-                ? navigate("profile")
-                : nextPage === "dashboard"
-                  ? resolveOnboardingRoute({ dashboardEntry: true })
-                  : resolveOnboardingRoute({ destination: nextPage })
-            }
-          />
-          <div className="col d-flex flex-column">
-            {page === "live-calls-list" &&
-              authenticated &&
-              (!userStatuses.paymentComplete ||
-                !userStatuses.kycComplete ||
-                !userStatuses.agreementComplete) && (
-                <SubscribeCallsOverlay
-                  page={page}
-                  onSubscribe={() => navigate("pricing")}
-                  complianceStatuses={
-                    onboardingStatusesLoaded ? userStatuses : null
-                  }
-                  onKyc={() => navigate("kyc")}
-                  onAgreement={() => navigate("agreement")}
-                />
-              )}
-            {page === "live-calls-list" &&
-              (!authenticated ||
-                (userStatuses.paymentComplete &&
-                  userStatuses.kycComplete &&
-                  userStatuses.agreementComplete)) && <OptionsSignals />}
-            {page === "cash-intraday-list" &&
-              (!userStatuses.paymentComplete ||
-                !userStatuses.kycComplete ||
-                !userStatuses.agreementComplete) && (
-                <SubscribeCallsOverlay
-                  page={page}
-                  onSubscribe={() => navigate("pricing")}
-                  complianceStatuses={
-                    onboardingStatusesLoaded ? userStatuses : null
-                  }
-                  onKyc={() => navigate("kyc")}
-                  onAgreement={() => navigate("agreement")}
-                />
-              )}
-            {page === "cash-intraday-list" &&
-              userStatuses.paymentComplete &&
-              userStatuses.kycComplete &&
-              userStatuses.agreementComplete && <CashIntradaySignals />}
-            {page === "stock-future-intraday-list" &&
-              (!userStatuses.paymentComplete ||
-                !userStatuses.kycComplete ||
-                !userStatuses.agreementComplete) && (
-                <SubscribeCallsOverlay
-                  page={page}
-                  onSubscribe={() => navigate("pricing")}
-                  complianceStatuses={
-                    onboardingStatusesLoaded ? userStatuses : null
-                  }
-                  onKyc={() => navigate("kyc")}
-                  onAgreement={() => navigate("agreement")}
-                />
-              )}
-            {page === "stock-future-intraday-list" &&
-              userStatuses.paymentComplete &&
-              userStatuses.kycComplete &&
-              userStatuses.agreementComplete && <StockFutureIntradaySignals />}
-            {page === "dashboard" && (
-              <Dashboard
-                isSubscribed={userStatuses.paymentComplete}
-                onSubscribe={handleDashboardSubscribe}
-                onTradeSelect={handleDashboardTradeSelect}
-                subscriptionStatus={subscriptionStatus}
-                onboardingStatuses={userStatuses}
-                onKyc={() => resolveOnboardingRoute()}
-                onAgreement={() => resolveOnboardingRoute()}
-                notify={notify}
-              />
-            )}
-            {page === "profile" && (
-              <ProfilePage
-                onServices={() => navigate("services-list")}
-                notify={notify}
-              />
-            )}
-            <Copyright />
-            <MobileDashboardNavigation
+          <div className="row g-0 flex-grow-1">
+            <DashboardSidebar
               page={page}
               onNavigate={(nextPage) =>
-                nextPage === "dashboard"
-                  ? resolveOnboardingRoute({ dashboardEntry: true })
-                  : resolveOnboardingRoute({ destination: nextPage })
+                nextPage === "profile"
+                  ? navigate("profile")
+                  : nextPage === "dashboard"
+                    ? resolveOnboardingRoute({ dashboardEntry: true })
+                    : resolveOnboardingRoute({ destination: nextPage })
               }
             />
+            <div className="col d-flex flex-column">
+              {page === "live-calls-list" &&
+                authenticated &&
+                (!userStatuses.paymentComplete ||
+                  !userStatuses.kycComplete ||
+                  !userStatuses.agreementComplete) && (
+                  <SubscribeCallsOverlay
+                    page={page}
+                    onSubscribe={() => navigate("pricing")}
+                    complianceStatuses={
+                      onboardingStatusesLoaded ? userStatuses : null
+                    }
+                    onKyc={() => navigate("kyc")}
+                    onAgreement={() => navigate("agreement")}
+                  />
+                )}
+              {page === "live-calls-list" &&
+                (!authenticated ||
+                  (userStatuses.paymentComplete &&
+                    userStatuses.kycComplete &&
+                    userStatuses.agreementComplete)) && <OptionsSignals />}
+              {page === "cash-intraday-list" &&
+                (!userStatuses.paymentComplete ||
+                  !userStatuses.kycComplete ||
+                  !userStatuses.agreementComplete) && (
+                  <SubscribeCallsOverlay
+                    page={page}
+                    onSubscribe={() => navigate("pricing")}
+                    complianceStatuses={
+                      onboardingStatusesLoaded ? userStatuses : null
+                    } onKyc={() => navigate("kyc")}
+                    onAgreement={() => navigate("agreement")}
+                  />
+                )}
+              {page === "cash-intraday-list" &&
+                userStatuses.paymentComplete &&
+                userStatuses.kycComplete &&
+                userStatuses.agreementComplete && <CashIntradaySignals />}
+              {page === "stock-future-intraday-list" &&
+                (!userStatuses.paymentComplete ||
+                  !userStatuses.kycComplete ||
+                  !userStatuses.agreementComplete) && (
+                  <SubscribeCallsOverlay
+                    page={page}
+                    onSubscribe={() => navigate("pricing")}
+                    complianceStatuses={
+                      onboardingStatusesLoaded ? userStatuses : null
+                    }
+                    onKyc={() => navigate("kyc")}
+                    onAgreement={() => navigate("agreement")}
+                  />
+                )}
+              {page === "stock-future-intraday-list" &&
+                userStatuses.paymentComplete &&
+                userStatuses.kycComplete &&
+                userStatuses.agreementComplete && <StockFutureIntradaySignals />}
+              {page === "dashboard" && (
+                <Dashboard
+                  isSubscribed={userStatuses.paymentComplete}
+                  onSubscribe={handleDashboardSubscribe}
+                  onTradeSelect={handleDashboardTradeSelect}
+                  subscriptionStatus={subscriptionStatus}
+                  onboardingStatuses={userStatuses}
+                  onKyc={() => resolveOnboardingRoute()}
+                  onAgreement={() => resolveOnboardingRoute()}
+                  notify={notify}
+                />
+              )}
+              {page === "profile" && (
+                <ProfilePage
+                  onServices={() => navigate("services-list")}
+                  notify={notify}
+                />
+              )}
+              <Copyright />
+              <MobileDashboardNavigation
+                page={page}
+                onNavigate={(nextPage) =>
+                  nextPage === "dashboard"
+                    ? resolveOnboardingRoute({ dashboardEntry: true })
+                    : resolveOnboardingRoute({ destination: nextPage })
+                }
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
       {page === "services-list" && (
         <ServiceListPage
           onContinue={resolveOnboardingRoute}
           onStatusChange={updateUserStatuses}
-          onCheckCompliance={checkPaymentCompliance}
-          onComplianceRequired={handleComplianceRequired}
           notify={notify}
         />
       )}
@@ -1384,8 +1325,6 @@ function SiteApp() {
         <PricingPage
           onContinue={resolveOnboardingRoute}
           onStatusChange={updateUserStatuses}
-          onCheckCompliance={checkPaymentCompliance}
-          onComplianceRequired={handleComplianceRequired}
           notify={notify}
         />
       )}

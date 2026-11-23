@@ -158,10 +158,11 @@ function getSignalLevels(signal) {
       ? [
           {
             label,
-            chartLabel: index === 1 ? (isBuy ? "Buy" : "Sell") : label,
+            chartLabel:
+              index === 1 ? (isBuy ? "Buy Above" : "Sell Below") : label,
             value,
-            color: index === 0 ? "#dc3545" : isBuy ? "#079b78" : "#dc3545",
-            textClass: index === 0 || !isBuy ? "text-danger" : "text-success",
+            color: index === 0 ? "#dc3545" : "#079b78",
+            textClass: index === 0 ? "text-danger" : "text-success",
           },
         ]
       : [];
@@ -218,13 +219,22 @@ export default function IntradaySignalChart({ signal }) {
   ];
   const hitTimeline = [
     ...(signal?.executedAt
-      ? [{ label: "Executed", triggerAt: signal.executedAt }]
+      ? [{ label: "Trade Executed", triggerAt: signal.executedAt }]
       : []),
     ...targetTimeline
       .filter(({ triggerAt }) => Boolean(triggerAt))
-      .map(({ label, triggerAt }) => ({ label: `${label} hit`, triggerAt })),
+      .map(({ label, triggerAt }) => ({
+        label: `Target ${label.slice(1)} archived`,
+        triggerAt,
+      })),
     ...(signal?.slTriggerAt
-      ? [{ label: "SL hit", triggerAt: signal.slTriggerAt, isStopLoss: true }]
+      ? [
+          {
+            label: "Stop-Loss Triggered",
+            triggerAt: signal.slTriggerAt,
+            isStopLoss: true,
+          },
+        ]
       : []),
   ].sort((left, right) => new Date(left.triggerAt) - new Date(right.triggerAt));
 
@@ -291,13 +301,15 @@ export default function IntradaySignalChart({ signal }) {
           y: pricesByTime.get(time) ?? null,
         })),
         clip: false,
-        borderColor: "#ff8a2b",
+        // borderColor: "#ff8a2b",
+        borderColor: "#000000",
         backgroundColor: "rgba(255, 138, 43, 0.12)",
         borderWidth: 2,
         pointRadius: times.map((time) => (time === latestTime ? 5 : 0)),
         pointHoverRadius: 5,
         pointBackgroundColor: "#fff",
-        pointBorderColor: "#ff8a2b",
+        // pointBorderColor: "#ff8a2b",
+        pointBorderColor: "#000000",
         pointBorderWidth: 1.5,
         tension: 0.25,
         fill: false,
@@ -340,9 +352,7 @@ export default function IntradaySignalChart({ signal }) {
             ctx.filter = "none";
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 0.12;
-            ctx.fillStyle = isBuy
-              ? "rgba(12, 185, 143, 0.55)"
-              : "rgba(220, 53, 69, 0.35)";
+            ctx.fillStyle = "#079b78";
             ctx.fillRect(
               chartArea.left,
               isBuy ? chartArea.top : entryY,
@@ -404,12 +414,12 @@ export default function IntradaySignalChart({ signal }) {
           chartInstance.options.layout.padding.right = window.matchMedia(
             "(max-width: 575.98px)",
           ).matches
-            ? 42
-            : 49;
+            ? 60
+            : 70;
         },
         layout: {
           padding: {
-            right: window.matchMedia("(max-width: 575.98px)").matches ? 42 : 49,
+            right: window.matchMedia("(max-width: 575.98px)").matches ? 60 : 70,
             top: 4,
             bottom: 0,
             left: 0,

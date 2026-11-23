@@ -286,12 +286,12 @@ function MobileServiceList({
           aria-labelledby="mobile-combo-title"
         >
           <div className="p-3">
-          <h2 id="mobile-combo-title" className="text-center">
-            Intraday Combo
-          </h2>
-          <small className="small mb-0 text-center text-muted text-capitalize d-block mt-2">
-            One subscription for research across 4 intraday trading segments.
-          </small>
+            <h2 id="mobile-combo-title" className="text-center">
+              Intraday Combo
+            </h2>
+            <small className="small mb-0 text-center text-muted text-capitalize d-block mt-2">
+              One subscription for research across 4 intraday trading segments.
+            </small>
           </div>
           <div className=" border bg-light px-3 pt-2 pb-3 d-none">
             <OfferCountdown flush label="Limited Time Offer" />
@@ -309,42 +309,42 @@ function MobileServiceList({
             </button>
           </div>
           <div className="p-3 d-none">
-          <h3 className="mobile-services__eyebrow my-3">Segments</h3>
-          <div className="row g-2">
-            {mobileSegments.map((segment) => (
-              <div className="col-6" key={segment.label}>
-                <div className="rounded-3 bg-body-tertiary p-2">
-                  <i
-                    className={`bi ${segment.icon} me-2`}
-                    style={{ color: "#fb7914" }}
-                    aria-hidden="true"
-                  />
-                  <small>{segment.label}</small>
+            <h3 className="mobile-services__eyebrow my-3">Segments</h3>
+            <div className="row g-2">
+              {mobileSegments.map((segment) => (
+                <div className="col-6" key={segment.label}>
+                  <div className="rounded-3 bg-body-tertiary p-2">
+                    <i
+                      className={`bi ${segment.icon} me-2`}
+                      style={{ color: "#fb7914" }}
+                      aria-hidden="true"
+                    />
+                    <small>{segment.label}</small>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* <div className="mobile-services__divider" /> */}
-          <h3 className="mobile-services__eyebrow my-3">Features</h3>
-          <ul className="list-unstyled">
-            {mobileFeatures.map((feature) => (
-              <li className="mb-2" key={feature.label}>
-                <div className="d-inline-block p-1 rounded-2 me-2" style={{"color": " #fb7914",background:"#fb791410"}}>
-                <i className={`bi ${feature.icon} mx-1`} aria-hidden="true" />
-                </div>
-                <small>{feature.label}</small>
-              </li>
-            ))}
-          </ul>
-          <hr/>
-          <div className="text-center text-muted small mt-3">
-            <span className="d-block fw-semibold">
-              <i class="bi bi-patch-check-fill text-primary" /> SEBI Registered
-              Research Analyst.
-            </span>
-            <span>SEBI Registration No.: INH000029829</span>
-          </div>
+            {/* <div className="mobile-services__divider" /> */}
+            <h3 className="mobile-services__eyebrow my-3">Features</h3>
+            <ul className="list-unstyled">
+              {mobileFeatures.map((feature) => (
+                <li className="mb-2" key={feature.label}>
+                  <div className="d-inline-block p-1 rounded-2 me-2" style={{ "color": " #fb7914", background: "#fb791410" }}>
+                    <i className={`bi ${feature.icon} mx-1`} aria-hidden="true" />
+                  </div>
+                  <small>{feature.label}</small>
+                </li>
+              ))}
+            </ul>
+            <hr />
+            <div className="text-center text-muted small mt-3">
+              <span className="d-block fw-semibold">
+                <i class="bi bi-patch-check-fill text-primary" /> SEBI Registered
+                Research Analyst.
+              </span>
+              <span>SEBI Registration No.: INH000029829</span>
+            </div>
           </div>
         </section>
         <section
@@ -562,32 +562,7 @@ function normalizePlan(plan, index) {
   };
 }
 
-const PENDING_PLAN_KEY = "idt:pendingPaymentPlanId";
-
-function readPendingPlanId() {
-  try {
-    return sessionStorage.getItem(PENDING_PLAN_KEY) || "";
-  } catch {
-    return "";
-  }
-}
-
-function writePendingPlanId(planId) {
-  try {
-    if (planId) sessionStorage.setItem(PENDING_PLAN_KEY, planId);
-    else sessionStorage.removeItem(PENDING_PLAN_KEY);
-  } catch {
-    // Storage unavailable (private mode etc.) — plan simply won't be preselected.
-  }
-}
-
-function ServiceListPage({
-  onContinue,
-  onStatusChange,
-  onCheckCompliance,
-  onComplianceRequired,
-  notify,
-}) {
+function ServiceListPage({ onContinue, onStatusChange, notify }) {
   const eapiAuth = useSelector(selectEapiAuth);
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState("");
@@ -649,13 +624,10 @@ function ServiceListPage({
         .filter((plan) => plan.isShow === true)
         .map(normalizePlan);
       setPlans(nextPlans);
-      const pendingPlanId = readPendingPlanId();
       setSelectedPlanId((currentId) =>
         nextPlans.some((plan) => plan.id === currentId)
           ? currentId
-          : nextPlans.some((plan) => plan.id === pendingPlanId)
-            ? pendingPlanId
-            : nextPlans[0]?.id || "",
+          : nextPlans[0]?.id || "",
       );
 
       const statusResponse =
@@ -685,7 +657,7 @@ function ServiceListPage({
         notify(
           "error",
           agreementResult.reason?.message ||
-            "Unable to check agreement and payment status",
+          "Unable to check agreement and payment status",
         );
     } catch (error) {
       setLoadError(error.message || "Unable to load subscription plans");
@@ -737,33 +709,6 @@ function ServiceListPage({
       notify("error", "Please accept the MITC and Privacy Policy to subscribe");
       return;
     }
-
-    setPaymentLoading(true);
-    let latestStatuses = statuses;
-    try {
-      latestStatuses = (await onCheckCompliance?.()) || statuses;
-    } finally {
-      setPaymentLoading(false);
-    }
-
-    if (latestStatuses.paymentComplete) {
-      writePendingPlanId("");
-      onContinue({ plan: selectedPlan, statuses: latestStatuses });
-      return;
-    }
-
-    if (!latestStatuses.kycComplete || !latestStatuses.agreementComplete) {
-      writePendingPlanId(selectedPlan.id);
-      notify(
-        "error",
-        !latestStatuses.kycComplete
-          ? "Please complete your KYC before making the payment"
-          : "Please sign the agreement before making the payment",
-      );
-      onComplianceRequired?.(latestStatuses);
-      return;
-    }
-    writePendingPlanId("");
 
     const recurringPayment = Boolean(selectedPlan.cfPlanId);
     const checkoutAvailable = recurringPayment
@@ -824,7 +769,7 @@ function ServiceListPage({
         if (checkoutResult?.error)
           throw new Error(
             checkoutResult.error.message ||
-              "Recurring payment was not completed",
+            "Recurring payment was not completed",
           );
         await loadPlansAndStatuses();
         return;
@@ -948,15 +893,15 @@ function ServiceListPage({
                           key={plan.id}
                           htmlFor={`subscription-plan-${plan.id}`}
                           className={`border rounded-3 p-3 ${selected ? "shadow-sm bg-warning bg-opacity-10 border-warning" : "bg-white"}`}
-                          // style={
-                          //   selected
-                          //     ? {
-                          //         borderColor: "#ff9f00",
-                          //         backgroundColor: "#fff9e8",
-                          //         cursor: "pointer",
-                          //       }
-                          //     : { cursor: "pointer" }
-                          // }
+                        // style={
+                        //   selected
+                        //     ? {
+                        //         borderColor: "#ff9f00",
+                        //         backgroundColor: "#fff9e8",
+                        //         cursor: "pointer",
+                        //       }
+                        //     : { cursor: "pointer" }
+                        // }
                         >
                           <div className="d-flex align-items-center justify-content-between gap-3">
                             <div className="d-flex align-items-center gap-3">
@@ -968,10 +913,10 @@ function ServiceListPage({
                                 value={plan.id}
                                 checked={selected}
                                 onChange={() => setSelectedPlanId(plan.id)}
-                                // style={{
-                                //   accentColor: "#FA5B05",
-                                //   transform: "scale(1.3)",
-                                // }}
+                              // style={{
+                              //   accentColor: "#FA5B05",
+                              //   transform: "scale(1.3)",
+                              // }}
                               />
                               <div>
                                 <strong className="d-block fs-6">

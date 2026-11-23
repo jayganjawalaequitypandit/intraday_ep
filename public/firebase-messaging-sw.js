@@ -17,19 +17,15 @@ firebase.initializeApp({
   appId: "__FIREBASE_APP_ID__",
 });
 
-const messaging = firebase.messaging();
+firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || payload.data?.title || "New Notification";
-
-  const options = {
-    body: payload.notification?.body || payload.data?.body || "",
+const registration = self.registration;
+const showNativeNotification = ServiceWorkerRegistration.prototype.showNotification;
+registration.showNotification = (title, options = {}) =>
+  showNativeNotification.call(registration, title, {
+    ...options,
     icon: "/idt-favicon.png",
-    data: payload.data || {},
-  };
-
-  self.registration.showNotification(title, options);
-});
+  });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();

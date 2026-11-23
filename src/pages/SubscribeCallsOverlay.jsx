@@ -37,22 +37,16 @@ export default function SubscribeCallsOverlay({
 }) {
   const current = callPages[page] || callPages["live-calls"];
   const accessTitle =
-    page === "live-calls" && page === "live-calls-list"
-      ? "Get access to live calls"
-      : `Get access to ${current.title}`;
+    (page === "live-calls" && page === "live-calls-list") ? "Get access to live calls" : `Get access to ${current.title}`;
   const pendingCompliance = !complianceStatuses
     ? []
-    : !complianceStatuses.kycComplete
-      ? [{ label: "KYC", actionLabel: "Complete KYC", onClick: onKyc }]
-      : !complianceStatuses.agreementComplete
-        ? [
-            {
-              label: "Agreement",
-              actionLabel: "Sign MITC",
-              onClick: onAgreement,
-            },
-          ]
-        : [];
+    : !complianceStatuses.paymentComplete
+      ? []
+      : !complianceStatuses.kycComplete
+        ? [{ label: "KYC", actionLabel: "Complete KYC", onClick: onKyc }]
+        : !complianceStatuses.agreementComplete
+          ? [{ label: "Agreement", actionLabel: "Sign MITC", onClick: onAgreement }]
+          : [];
   const isComplianceGate = pendingCompliance.length > 0;
 
   return (
@@ -261,7 +255,7 @@ export default function SubscribeCallsOverlay({
                 </span>
                 <h2 className="fs-4 fw-bold" id="subscribe-calls-title">
                   {isComplianceGate
-                    ? `${pendingCompliance.map(({ label }) => label).join(" and ")} pending`
+                    ? `${pendingCompliance[0].label} pending`
                     : accessTitle}
                 </h2>
                 <p className="text-body-secondary mb-4">
@@ -273,17 +267,14 @@ export default function SubscribeCallsOverlay({
                 </p>
                 {isComplianceGate ? (
                   <div className="d-flex flex-column gap-2">
-                    {pendingCompliance.map(({ label, onClick }) => (
+                    {pendingCompliance.slice(0, 1).map(({ label, actionLabel, onClick }) => (
                       <button
                         type="button"
                         className="btn btn-warning fw-semibold px-4"
                         onClick={onClick}
                         key={label}
                       >
-                        {
-                          pendingCompliance.find((item) => item.label === label)
-                            ?.actionLabel
-                        }{" "}
+                        {actionLabel}{" "}
                         <i
                           className="bi bi-arrow-right ms-1"
                           aria-hidden="true"

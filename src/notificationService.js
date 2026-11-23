@@ -83,23 +83,9 @@ export async function enableNotifications(onPermissionGranted) {
 export async function listenForForegroundMessages(callback) {
   const messaging = await getFirebaseMessaging();
 
-  if (!messaging) return () => {};
+  if (!messaging) return () => { };
 
   return onMessage(messaging, async (payload) => {
     callback?.(payload);
-
-    const title = payload.notification?.title || payload.data?.title;
-    if (!title || Notification.permission !== "granted") return;
-
-    const registration = await navigator.serviceWorker.getRegistration(
-      "/firebase-messaging-sw.js",
-    );
-    if (!registration) return;
-
-    await registration.showNotification(title, {
-      body: payload.notification?.body || payload.data?.body || "",
-      icon: "/idt-favicon.png",
-      data: payload.data || {},
-    });
   });
 }

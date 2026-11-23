@@ -11,7 +11,7 @@ const accountStates = {
   active: { registered: true, kycComplete: true, agreementComplete: true, paymentComplete: true, subscriptionActive: true },
 }
 
-const stepNames = { 1: 'Account', 2: 'Plan', 3: 'KYC', 4: 'Agreement', 5: 'Payment', 6: 'Activate', 7: 'Download' }
+const stepNames = { 1: 'Account', 2: 'Plan', 3: 'Payment', 4: 'KYC', 5: 'Agreement', 6: 'Activate', 7: 'Download' }
 const plans = [
   { name: 'Monthly', price: 2999, term: '30 days', note: 'Flexible monthly access' },
   { name: 'Quarterly', price: 7999, term: '90 days', note: 'Save 11%', popular: true },
@@ -22,11 +22,11 @@ function buildJourney(account) {
   if (!account) return [1]
   if (account.subscriptionActive) return [1, 7]
   const steps = [1]
-  if (!account.paymentComplete) steps.push(2, 5)
+  if (!account.paymentComplete) steps.push(2, 3)
   if (!account.kycComplete || !account.agreementComplete) {
     steps.push(6)
-    if (!account.kycComplete) steps.push(3)
-    if (!account.agreementComplete) steps.push(4)
+    if (!account.kycComplete) steps.push(4)
+    if (!account.agreementComplete) steps.push(5)
   }
   steps.push(7)
   return steps
@@ -309,9 +309,9 @@ function OnboardingPage() {
             <div className="p-4 p-md-5">
               {step === 1 && <AccountStep onRoute={routeAccount} />}
               {step === 2 && <PlanStep selectedPlan={selectedPlan} onSelect={setSelectedPlan} onBack={() => move(-1)} onNext={() => move(1)} />}
-              {step === 3 && <KycStep onBack={() => move(-1)} onComplete={() => completeFlag('kycComplete')} />}
-              {step === 4 && <AgreementStep onBack={() => move(-1)} onComplete={() => completeFlag('agreementComplete')} />}
-              {step === 5 && <PaymentStep plan={selectedPlan} onBack={() => move(-1)} onComplete={() => completeFlag('paymentComplete')} />}
+              {step === 3 && <PaymentStep plan={selectedPlan} onBack={() => move(-1)} onComplete={() => completeFlag('paymentComplete')} />}
+              {step === 4 && <KycStep onBack={() => move(-1)} onComplete={() => completeFlag('kycComplete')} />}
+              {step === 5 && <AgreementStep onBack={() => move(-1)} onComplete={() => completeFlag('agreementComplete')} />}
               {step === 6 && <ActivateStep account={account} onBack={() => move(-1)} onNext={() => move(1)} />}
               {step === 7 && <DownloadStep returningActive={returningActive} />}
             </div>
